@@ -1,1 +1,1 @@
-FROM openjdk
+FROM ubuntu
