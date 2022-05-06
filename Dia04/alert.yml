@@ -1,0 +1,92 @@
+groups:
+  - name: DemoAlerts
+    rules:
+      - alert: InstanceDown 
+        expr: up{job="services"} < 1 
+        for: 1m
+        labels:
+          severity: low
+        annotations:
+          summary: 'Alert with low severity.'
+
+      - alert: InstanceDownCritical
+        expr: up{job="services"} < 1 
+        for: 1m 
+        labels:
+          severity: high
+        annotations:
+          summary: 'Alert with high severity.'
+
+      - alert: node_power_supply_capacity_warning
+        expr: node_power_supply_capacity < 99
+        for: 1m 
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Alert with high severity.'
+
+      - alert: node_power_supply_capacity_critical
+        expr: node_power_supply_capacity < 95
+        for: 1m 
+        labels:
+          severity: criticial
+        annotations:
+          summary: 'Alert with high severity.'
+      - alert: node_filesystem_full_95percent
+        expr: avg_over_time(node_filesystem_free_percent[2m]) < 5
+        for: 5m
+        labels:
+          severity: high
+        annotations:
+          description: '{{ $labels.instance }} device {{$labels.device}} on {{$labels.mountpoint}}
+            has less than 5% free space left.'
+          summary: '{{ $labels.instance }}: Filesystem is running out of space soon.'
+      - alert: node_cpu_usage_warning
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: Node CPU usage warning (instance {{ $labels.instance }})
+          description: "CPU usage is > 80%\n  VALUE = {{ humanize $value }}\n  LABELS = {{ $labels }}"
+      - alert: node_cpu_usage_high
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 95
+        for: 0m
+        labels:
+          severity: high
+        annotations:
+          summary: Node CPU usage high (instance {{ $labels.instance }})
+          description: "CPU usage is > 95%\n  VALUE = {{ humanize $value }}\n  LABELS = {{ $labels }}"
+      - alert: node_ram_using_95_percent
+        expr: avg_over_time(node_ram_usage_percent[2m]) > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          description: '{{$labels.instance}} is using at least 95% of its RAM for at least
+            30 minutes now.'
+      - alert: node_high_cpu_load
+          expr: node_load1 / (count without (cpu, mode) (node_cpu_seconds_total{mode="system"})) >= 1
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "CPU load (instance {{ $labels.instance }})"
+            description: "CPU load average (1m) is high\n  VALUE = {{ humanize $value }}\n  LABELS: {{ $labels }}"  
+        - alert: node_high_cpu_load
+          expr: node_load15 / (count without (cpu, mode) (node_cpu_seconds_total{mode="system"})) >= 1
+          for: 10m
+          labels:
+            severity: high
+          annotations:
+            summary: "CPU load (instance {{ $labels.instance }})"
+            description: "CPU load average (15m) is high\n  VALUE = {{ humanize $value }}\n  LABELS: {{ $labels }}"  
+        - alert: node_ram_using_80_percent
+          expr: avg_over_time(node_ram_usage_percent[2m]) > 80
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            description: Host memory usage is {{ humanize $value }}%. Reported by
+              instance {{ $labels.instance }} of job {{ $labels.job }}.
+            summary: Server memory is almost full
